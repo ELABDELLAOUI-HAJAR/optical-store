@@ -85,6 +85,7 @@ const resources = {
       
       // Products
       addProduct: 'Add Product',
+      editProduct: 'Edit Product',
       reference: 'Reference',
       productName: 'Product Name',
       brand: 'Brand',
@@ -104,10 +105,9 @@ const resources = {
       category: 'Category',
       lensType: 'Lens Type',
       material: 'Material',
-      initialQuantity: 'Initial Quantity',
-      stockQuantity: 'Stock Quantity',
       glassType: 'Glass Type',
       select: 'Select...',
+      delete_confirmation_product: 'Are you sure you want to delete this product?',
       
       // Product Types
       frame: 'Frame',
@@ -261,6 +261,7 @@ const resources = {
       
       // Products
       addProduct: 'Ajouter un Produit',
+      editProduct: 'Modifier le Produit',
       reference: 'Référence',
       productName: 'Nom du Produit',
       brand: 'Marque',
@@ -280,10 +281,9 @@ const resources = {
       category: 'Catégorie',
       lensType: 'Type de Verre',
       material: 'Matériau',
-      initialQuantity: 'Quantité Initiale',
-      stockQuantity: 'Quantité en Stock',
       glassType: 'Type de Verre',
       select: 'Sélectionner...',
+      delete_confirmation_product: 'Êtes-vous sûr de vouloir supprimer ce produit ?',
       
       // Product Types
       frame: 'Monture',

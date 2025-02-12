@@ -111,6 +111,20 @@ export const updateDoctor = async (doctorId, doctorData) => {
   return data; 
 };
 
+// Function to save a new product
+export const saveProduct = async (productData) => {
+  const { data, error } = await supabase
+    .from('product') 
+    .insert([productData]);
+
+  if (error) {
+    console.error('Error saving product:', error);
+    return null; 
+  }
+
+  return data; 
+};
+
 // Function to fetch available products
 export const fetchProducts = async () => {
   const { data, error } = await supabase
@@ -122,6 +136,32 @@ export const fetchProducts = async () => {
       return [];
   }
   return data;
+};
+
+// Function to delete a product
+export const deleteProduct = async (productId) => {
+  const { error } = await supabase
+      .from('product')
+      .delete()
+      .eq('id', productId); 
+
+  if (error) {
+      console.error('Error deleting product:', error);
+  } 
+};
+
+// Function to update a product
+export const updateProduct = async (productId, productData) => {
+  const { data, error } = await supabase
+      .from('product') 
+      .update(productData)
+      .eq('id', productId); 
+
+  if (error) {
+      console.error('Error updating product:', error);
+      return null; 
+  }
+  return data; 
 };
 
 export { fetchClients , fetchDoctors};

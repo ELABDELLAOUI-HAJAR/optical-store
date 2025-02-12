@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   PencilIcon,
@@ -8,33 +8,23 @@ import {
 import AddProductModal from '../components/AddProductModal';
 import PageTitle from '../components/PageTitle';
 import SearchBar from '../components/SearchBar';
+import { saveProduct, fetchProducts, deleteProduct, updateProduct } from '../supabaseClient';
 
 function Products() {
   const { t } = useTranslation();
-  const [products, setProducts] = useState([
-    {
-      id: 1,
-      reference: 'RAY-001',
-      name: 'Aviator Classic',
-      brand: 'Ray-Ban',
-      sellingPrice: 199.99,
-      purchasePrice: 120.00,
-      inStock: 15,
-    },
-    {
-      id: 2,
-      reference: 'OAK-001',
-      name: 'Holbrook',
-      brand: 'Oakley',
-      sellingPrice: 179.99,
-      purchasePrice: 100.00,
-      inStock: 8,
-    },
-    // Add more sample products as needed
-  ]);
-
+  const [products, setProducts] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState(null);
+
+  const getProducts = async () => {
+    const productsData = await fetchProducts();
+    setProducts(productsData);
+  };
+
+  useEffect(() => {
+    getProducts();
+  }, []);
 
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
@@ -47,14 +37,33 @@ function Products() {
     });
   }, [products, searchQuery]);
 
-  const handleEdit = (id) => {
-    // Handle edit action
-    console.log('Edit product:', id);
+  const handleSubmitProduct = async (productData) => {
+      // Add new product
+    const result = await saveProduct(productData);
+    if (result) 
+      console.log('Product saved successfully:', result);
+
+    //setCurrentPage(1);
+    getProducts();
   };
 
-  const handleDelete = (id) => {
-    // Handle delete action
-    console.log('Delete product:', id);
+  const handleAddNewProduct = () => {
+    setEditingProduct(null);
+    setIsAddModalOpen(true);
+  };
+
+  const handleEditProduct = (productId) => {
+    const product = products.find(p => p.id === productId);
+    setEditingProduct(product);
+    setIsAddModalOpen(true);
+  };
+
+  const handleDeleteProduct = async(productId) => {
+    if (window.confirm(t('delete_confirmation_product'))) {
+      await deleteProduct(productId);
+      //setCurrentPage(1);
+      getProducts();
+    }
   };
 
   return (
@@ -67,7 +76,7 @@ function Products() {
           <button
             type="button"
             className="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto"
-            onClick={() => setIsAddModalOpen(true)}
+            onClick={handleAddNewProduct}
           >
             <PlusIcon className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
             {t('addProduct')}
@@ -125,25 +134,25 @@ function Products() {
                           {product.brand}
                         </td>
                         <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-                          {product.sellingPrice.toFixed(2)} {t('currency')}
+                          {product.selling_price.toFixed(2)} {t('currency')}
                         </td>
                         <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-                          {product.purchasePrice.toFixed(2)} {t('currency')}
+                          {product.purchase_price.toFixed(2)} {t('currency')}
                         </td>
                         <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-                          {product.inStock}
+                          {product.quantity}
                         </td>
                         <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
                           <div className="flex items-center space-x-4">
                               <button
-                                onClick={() => handleEdit(product.id)}
+                                onClick={() => handleEditProduct(product.id)}
                                 className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
                               >
                                 <PencilIcon className="h-5 w-5" aria-hidden="true" />
                                 <span className="sr-only">{t('edit')}</span>
                               </button>
                               <button
-                                onClick={() => handleDelete(product.id)}
+                                onClick={() => handleDeleteProduct(product.id)}
                                 className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                               >
                                 <TrashIcon className="h-5 w-5" aria-hidden="true" />
@@ -160,7 +169,12 @@ function Products() {
           </div>
         </div>
       </div>
-      <AddProductModal open={isAddModalOpen} setOpen={setIsAddModalOpen} />
+      <AddProductModal
+        open={isAddModalOpen}
+        setOpen={setIsAddModalOpen}
+        onSubmit={handleSubmitProduct}
+        initialData={editingProduct}
+      />
     </div>
   );
 }

@@ -62,7 +62,6 @@ function Clients() {
   const handleDeleteClient = async(clientId) => {
     if (window.confirm(t('delete_confirmation_client'))) {
       await deleteClient(clientId);
-      //setAllClients(allClients.filter(client => client.id !== clientId));
       setCurrentPage(1);
       getClients();
     }

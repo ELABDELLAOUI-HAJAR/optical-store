@@ -11,25 +11,47 @@ const materials = ['Metal', 'Plastic'];
 const glassTypes = ['Miniral', 'Organic', 'Polycarbonat'];
 const visionTypes = ['Near-sightedness', 'Far-sightedness', 'Progressive', 'Solar'];
 
-export default function AddProductModal({ open, setOpen }) {
+export default function AddProductModal({ open, setOpen, onSubmit, initialData }) {
   const { t } = useTranslation();
-  const [formData, setFormData] = useState({
+  const initialFormData = {
     // Product Information
     reference: '',
-    productName: '',
-    productType: '',
+    name: '',
+    product_type: '',
     brand: '',
     color: '',
     category: '',
-    lensType: '',
-    material: '',
-    initialQuantity: '',
-    stockQuantity: '',
-    sellingPrice: '',
-    purchasePrice: '',
+    lens_type: '',
+    frame_material: '',
+    quantity: '',
+    selling_price: '',
+    purchase_price: '',
+
     // Glass Information
-    glassType: '',
-    visionType: '',
+    glass_type: '',
+    vision_type: '',
+  };
+
+  const [formData, setFormData] = useState(() => {
+    console.log('Initial formData:', initialData);
+    if (initialData) {
+      return {
+        reference: initialData.reference || '',
+        name: initialData.name || '',
+        product_type: initialData.product_type || '',
+        brand: initialData.brand || '',
+        color: initialData.color || '',
+        category: initialData.category || '',
+        lens_type: initialData.lens_type || '',
+        frame_material: initialData.frame_material || '',
+        quantity: initialData.quantity || '',
+        selling_price: initialData.selling_price || '',
+        purchase_price: initialData.purchase_price || '',
+        glass_type: initialData.glass_type || '',
+        vision_type: initialData.vision_type || '',
+      };
+    }
+    return initialFormData;
   });
 
   const handleInputChange = (e) => {
@@ -42,8 +64,9 @@ export default function AddProductModal({ open, setOpen }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
     setOpen(false);
+    onSubmit(formData);
+    setFormData(initialFormData);
   };
 
   return (
@@ -86,7 +109,7 @@ export default function AddProductModal({ open, setOpen }) {
 
                 <div className="sm:flex sm:items-start">
                   <div className="mt-3 text-center sm:mt-0 sm:text-left w-full">
-                    <ModalTitle title={t('addProduct')} />
+                    <ModalTitle title={initialData ? t('editProduct') : t('addProduct')} />
                     <form onSubmit={handleSubmit}>
                       <div className="space-y-6">
                         {/* Product Information Section */}
@@ -111,23 +134,11 @@ export default function AddProductModal({ open, setOpen }) {
                             </div>
                             <div>
                               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                {t('productName')}
-                              </label>
-                              <input
-                                type="text"
-                                name="productName"
-                                value={formData.productName}
-                                onChange={handleInputChange}
-                                className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm dark:text-white"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                 {t('productType')}
                               </label>
                               <select
-                                name="productType"
-                                value={formData.productType}
+                                name="product_type"
+                                value={formData.product_type}
                                 onChange={handleInputChange}
                                 className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm dark:text-white"
                               >
@@ -138,6 +149,18 @@ export default function AddProductModal({ open, setOpen }) {
                                   </option>
                                 ))}
                               </select>
+                            </div>
+                            <div className="col-span-2">
+                              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                {t('productName')}
+                              </label>
+                              <input
+                                type="text"
+                                name="name"
+                                value={formData.name}
+                                onChange={handleInputChange}
+                                className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm dark:text-white"
+                              />
                             </div>
                             <div>
                               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -186,8 +209,8 @@ export default function AddProductModal({ open, setOpen }) {
                                 {t('lensType')}
                               </label>
                               <select
-                                name="lensType"
-                                value={formData.lensType}
+                                name="lens_type"
+                                value={formData.lens_type}
                                 onChange={handleInputChange}
                                 className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm dark:text-white"
                               >
@@ -204,8 +227,8 @@ export default function AddProductModal({ open, setOpen }) {
                                 {t('material')}
                               </label>
                               <select
-                                name="material"
-                                value={formData.material}
+                                name="frame_material"
+                                value={formData.frame_material}
                                 onChange={handleInputChange}
                                 className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm dark:text-white"
                               >
@@ -219,24 +242,12 @@ export default function AddProductModal({ open, setOpen }) {
                             </div>
                             <div>
                               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                {t('initialQuantity')}
+                                {t('quantity')}
                               </label>
                               <input
                                 type="number"
-                                name="initialQuantity"
-                                value={formData.initialQuantity}
-                                onChange={handleInputChange}
-                                className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm dark:text-white"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                {t('stockQuantity')}
-                              </label>
-                              <input
-                                type="number"
-                                name="stockQuantity"
-                                value={formData.stockQuantity}
+                                name="quantity"
+                                value={formData.quantity}
                                 onChange={handleInputChange}
                                 className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm dark:text-white"
                               />
@@ -248,8 +259,8 @@ export default function AddProductModal({ open, setOpen }) {
                               <input
                                 type="number"
                                 step="0.01"
-                                name="sellingPrice"
-                                value={formData.sellingPrice}
+                                name="selling_price"
+                                value={formData.selling_price}
                                 onChange={handleInputChange}
                                 className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm dark:text-white"
                               />
@@ -261,8 +272,8 @@ export default function AddProductModal({ open, setOpen }) {
                               <input
                                 type="number"
                                 step="0.01"
-                                name="purchasePrice"
-                                value={formData.purchasePrice}
+                                name="purchase_price"
+                                value={formData.purchase_price}
                                 onChange={handleInputChange}
                                 className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm dark:text-white"
                               />
@@ -283,8 +294,8 @@ export default function AddProductModal({ open, setOpen }) {
                                 {t('glassType')}
                               </label>
                               <select
-                                name="glassType"
-                                value={formData.glassType}
+                                name="glass_type"
+                                value={formData.glass_type}
                                 onChange={handleInputChange}
                                 className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm dark:text-white"
                               >
@@ -301,8 +312,8 @@ export default function AddProductModal({ open, setOpen }) {
                                 {t('visionType')}
                               </label>
                               <select
-                                name="visionType"
-                                value={formData.visionType}
+                                name="vision_type"
+                                value={formData.vision_type}
                                 onChange={handleInputChange}
                                 className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm dark:text-white"
                               >
