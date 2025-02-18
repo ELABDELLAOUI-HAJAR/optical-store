@@ -15,6 +15,7 @@ function Clients() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingClient, setEditingClient] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
   const rowsPerPage = 5;
 
   const getClients = useCallback(async () => {
@@ -41,6 +42,7 @@ function Clients() {
   const currentClients = useMemo(() => {
     const indexOfLastClient = currentPage * rowsPerPage;
     const indexOfFirstClient = indexOfLastClient - rowsPerPage;
+    setTotalPages(Math.ceil(filteredClients.length / rowsPerPage));
     return filteredClients.slice(indexOfFirstClient, indexOfLastClient);
 }, [filteredClients, currentPage, rowsPerPage]);
 
@@ -211,7 +213,7 @@ function Clients() {
           <button 
             className="bg-indigo-600 text-white rounded px-4 py-2 mt-2 hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
             onClick={() => setCurrentPage(currentPage + 1)} 
-            disabled={allClients.length <= rowsPerPage}
+            disabled={currentPage === totalPages}
           >
             {t('next')}
           </button>

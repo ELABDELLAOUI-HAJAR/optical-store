@@ -1,4 +1,4 @@
-import React, { Fragment, useState } from 'react';
+import React, { Fragment, useState, useEffect } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { useTranslation } from 'react-i18next';
@@ -11,7 +11,7 @@ const materials = ['Metal', 'Plastic'];
 const glassTypes = ['Miniral', 'Organic', 'Polycarbonat'];
 const visionTypes = ['Near-sightedness', 'Far-sightedness', 'Progressive', 'Solar'];
 
-export default function AddProductModal({ open, setOpen, onSubmit, initialData }) {
+export default function AddProductModal({ close, open, onSubmit, initialData }) {
   const { t } = useTranslation();
   const initialFormData = {
     // Product Information
@@ -32,10 +32,11 @@ export default function AddProductModal({ open, setOpen, onSubmit, initialData }
     vision_type: '',
   };
 
-  const [formData, setFormData] = useState(() => {
-    console.log('Initial formData:', initialData);
+  const [formData, setFormData] = useState(initialFormData);
+
+  useEffect(() => {
     if (initialData) {
-      return {
+      const mappedData = {
         reference: initialData.reference || '',
         name: initialData.name || '',
         product_type: initialData.product_type || '',
@@ -50,9 +51,9 @@ export default function AddProductModal({ open, setOpen, onSubmit, initialData }
         glass_type: initialData.glass_type || '',
         vision_type: initialData.vision_type || '',
       };
+      setFormData(mappedData);
     }
-    return initialFormData;
-  });
+  }, [initialData]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -64,14 +65,14 @@ export default function AddProductModal({ open, setOpen, onSubmit, initialData }
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setOpen(false);
+    close();
     onSubmit(formData);
     setFormData(initialFormData);
   };
 
   return (
     <Transition.Root show={open} as={Fragment}>
-      <Dialog as="div" className="relative z-50" onClose={setOpen}>
+      <Dialog as="div" className="relative z-50" onClose={close}>
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -100,7 +101,7 @@ export default function AddProductModal({ open, setOpen, onSubmit, initialData }
                   <button
                     type="button"
                     className="rounded-md bg-white dark:bg-gray-800 text-gray-400 hover:text-gray-500 focus:outline-none"
-                    onClick={() => setOpen(false)}
+                    onClick={close}
                   >
                     <span className="sr-only">Close</span>
                     <XMarkIcon className="h-6 w-6" aria-hidden="true" />
@@ -339,7 +340,7 @@ export default function AddProductModal({ open, setOpen, onSubmit, initialData }
                         <button
                           type="button"
                           className="mt-3 inline-flex w-full justify-center rounded-md bg-white dark:bg-gray-700 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-300 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 sm:mt-0 sm:w-auto"
-                          onClick={() => setOpen(false)}
+                          onClick={close}
                         >
                           {t('cancel')}
                         </button>

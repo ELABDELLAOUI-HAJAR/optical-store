@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   PencilIcon,
@@ -16,34 +16,56 @@ function Products() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
+  const [allProducts, setAllProducts] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const rowsPerPage = 5;
 
-  const getProducts = async () => {
+  const getProducts = useCallback(async () => {
     const productsData = await fetchProducts();
-    setProducts(productsData);
-  };
+    setAllProducts(productsData);
+  }, []);
 
   useEffect(() => {
     getProducts();
-  }, []);
+  }, [currentPage, getProducts]);
 
   const filteredProducts = useMemo(() => {
-    return products.filter((product) => {
+    return allProducts.filter((product) => {
       const searchTerm = searchQuery.toLowerCase();
       return (
-        product.name.toLowerCase().includes(searchTerm) ||
-        product.brand.toLowerCase().includes(searchTerm) ||
-        product.reference.toLowerCase().includes(searchTerm)
+        (product.name && product.name.toLowerCase().includes(searchTerm)) ||
+        (product.brand && product.brand.toLowerCase().includes(searchTerm)) ||
+        (product.reference && product.reference.toLowerCase().includes(searchTerm))
       );
     });
-  }, [products, searchQuery]);
+  }, [allProducts, searchQuery]);
+
+  // Calculate current products based on pagination
+  const currentProducts = useMemo(() => {
+    const indexOfLastProduct = currentPage * rowsPerPage;
+    const indexOfFirstProduct = indexOfLastProduct - rowsPerPage;
+    setTotalPages(Math.ceil(filteredProducts.length / rowsPerPage));
+    return filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct);
+  }, [filteredProducts, currentPage, rowsPerPage]);
+
+  useEffect(() => {
+    setProducts(currentProducts);
+  }, [currentProducts]);
 
   const handleSubmitProduct = async (productData) => {
+    if(editingProduct){
+      // Update product
+      const result = await updateProduct(editingProduct.id, productData);
+      if (result) 
+        console.log('Product updated successfully:', result);
+    } else {
       // Add new product
-    const result = await saveProduct(productData);
-    if (result) 
-      console.log('Product saved successfully:', result);
-
-    //setCurrentPage(1);
+      const result = await saveProduct(productData);
+      if (result) 
+        console.log('Product saved successfully:', result);
+    }
+    setCurrentPage(1);
     getProducts();
   };
 
@@ -64,6 +86,11 @@ function Products() {
       //setCurrentPage(1);
       getProducts();
     }
+  };
+
+  const handleCloseModal = () => {
+    setIsAddModalOpen(false);
+    setEditingProduct(null);
   };
 
   return (
@@ -122,7 +149,7 @@ function Products() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900">
-                    {filteredProducts.map((product) => (
+                    {products.map((product) => (
                       <tr key={product.id}>
                         <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6">
                           {product.reference}
@@ -168,10 +195,26 @@ function Products() {
             </div>
           </div>
         </div>
+        <div className="flex justify-end mt-2">
+          <button 
+            className="bg-indigo-600 text-white rounded px-4 py-2 mr-2 mt-2 hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            onClick={() => setCurrentPage(currentPage - 1)} 
+            disabled={currentPage === 1}
+          >
+            {t('previous')}
+          </button>
+          <button 
+            className="bg-indigo-600 text-white rounded px-4 py-2 mt-2 hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            onClick={() => setCurrentPage(currentPage + 1)}  
+            disabled={currentPage === totalPages}
+          >
+            {t('next')}
+          </button>
+        </div>
       </div>
       <AddProductModal
+        close={handleCloseModal}
         open={isAddModalOpen}
-        setOpen={setIsAddModalOpen}
         onSubmit={handleSubmitProduct}
         initialData={editingProduct}
       />

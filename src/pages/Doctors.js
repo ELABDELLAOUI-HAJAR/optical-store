@@ -15,6 +15,7 @@ function Doctors() {
   const [doctors, setDoctors] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [allDoctors, setAllDoctors] = useState([]);
+  const [totalPages, setTotalPages] = useState(0);
   const rowsPerPage = 5;
 
   const getDoctors = useCallback(async () => {
@@ -44,6 +45,7 @@ function Doctors() {
   const currentDoctors = useMemo(() => {
     const indexOfLastDoctor = currentPage * rowsPerPage;
     const indexOfFirstDoctor = indexOfLastDoctor - rowsPerPage;
+    setTotalPages(Math.ceil(filteredDoctors.length / rowsPerPage));
     return filteredDoctors.slice(indexOfFirstDoctor, indexOfLastDoctor);
 }, [filteredDoctors, currentPage, rowsPerPage]);
 
@@ -198,7 +200,7 @@ function Doctors() {
           <button 
             className="bg-indigo-600 text-white rounded px-4 py-2 mt-2 hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
             onClick={() => setCurrentPage(currentPage + 1)} 
-            disabled={allDoctors.length <= rowsPerPage}
+            disabled={currentPage === totalPages}
           >
             {t('next')}
           </button>
