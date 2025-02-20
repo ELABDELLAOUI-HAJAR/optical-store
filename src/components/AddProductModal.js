@@ -23,9 +23,9 @@ export default function AddProductModal({ close, open, onSubmit, initialData }) 
     category: '',
     lens_type: '',
     frame_material: '',
-    quantity: '',
-    selling_price: '',
-    purchase_price: '',
+    quantity: 0,
+    selling_price: 0,
+    purchase_price: 0,
 
     // Glass Information
     glass_type: '',
@@ -70,9 +70,15 @@ export default function AddProductModal({ close, open, onSubmit, initialData }) 
     setFormData(initialFormData);
   };
 
+  const handleClose = (e) => {
+    e.preventDefault();
+    close();
+    setFormData(initialFormData);
+  }
+
   return (
     <Transition.Root show={open} as={Fragment}>
-      <Dialog as="div" className="relative z-50" onClose={close}>
+      <Dialog as="div" className="relative z-50" onClose={handleClose}>
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -101,7 +107,7 @@ export default function AddProductModal({ close, open, onSubmit, initialData }) 
                   <button
                     type="button"
                     className="rounded-md bg-white dark:bg-gray-800 text-gray-400 hover:text-gray-500 focus:outline-none"
-                    onClick={close}
+                    onClick={handleClose}
                   >
                     <span className="sr-only">Close</span>
                     <XMarkIcon className="h-6 w-6" aria-hidden="true" />
@@ -213,6 +219,7 @@ export default function AddProductModal({ close, open, onSubmit, initialData }) 
                                 name="lens_type"
                                 value={formData.lens_type}
                                 onChange={handleInputChange}
+                                disabled={formData.product_type !== 'Lens'}
                                 className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm dark:text-white"
                               >
                                 <option value="">{t('select')}</option>
@@ -231,6 +238,7 @@ export default function AddProductModal({ close, open, onSubmit, initialData }) 
                                 name="frame_material"
                                 value={formData.frame_material}
                                 onChange={handleInputChange}
+                                disabled={formData.product_type !== 'Frame'}
                                 className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm dark:text-white"
                               >
                                 <option value="">{t('select')}</option>
@@ -298,6 +306,7 @@ export default function AddProductModal({ close, open, onSubmit, initialData }) 
                                 name="glass_type"
                                 value={formData.glass_type}
                                 onChange={handleInputChange}
+                                disabled={formData.product_type !== 'Glass'}
                                 className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm dark:text-white"
                               >
                                 <option value="">{t('select')}</option>
@@ -316,6 +325,7 @@ export default function AddProductModal({ close, open, onSubmit, initialData }) 
                                 name="vision_type"
                                 value={formData.vision_type}
                                 onChange={handleInputChange}
+                                disabled={formData.product_type !== 'Glass'}
                                 className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm dark:text-white"
                               >
                                 <option value="">{t('select')}</option>
@@ -340,7 +350,7 @@ export default function AddProductModal({ close, open, onSubmit, initialData }) 
                         <button
                           type="button"
                           className="mt-3 inline-flex w-full justify-center rounded-md bg-white dark:bg-gray-700 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-300 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 sm:mt-0 sm:w-auto"
-                          onClick={close}
+                          onClick={handleClose}
                         >
                           {t('cancel')}
                         </button>
