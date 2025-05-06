@@ -167,7 +167,7 @@ function Products() {
                           {product.purchase_price.toFixed(2)} {t('currency')}
                         </td>
                         <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-                          {product.quantity}
+                          {product.stock_quantity}
                         </td>
                         <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
                           <div className="flex items-center space-x-4">

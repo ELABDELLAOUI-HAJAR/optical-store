@@ -6,6 +6,7 @@ const resources = {
     translation: {
       // Navigation
       dashboard: 'Dashboard',
+      home: 'Home',
       clients: 'Clients',
       orders: 'Orders',
       products: 'Products',
@@ -33,7 +34,7 @@ const resources = {
       // Order Form
       orderDate: 'Order Date',
       deliveryDate: 'Delivery Date',
-      customerName: 'Customer Name',
+      customerName: 'Client Name',
       orderState: 'Order State',
       inProgress: 'In Progress',
       delivered: 'Delivered',
@@ -41,6 +42,7 @@ const resources = {
       socialSecurity: 'Social Security',
       orderInformation: 'Order Information',
       eyeMeasurements: 'Eye Measurements',
+      delete_confirmation_order: 'Are you sure you want to delete this order?',
       
       // Eye Measurements
       leftEye: 'Left Eye',
@@ -182,6 +184,7 @@ const resources = {
     translation: {
       // Navigation
       dashboard: 'Tableau de bord',
+      home: 'Accueil',
       clients: 'Clients',
       orders: 'Commandes',
       products: 'Produits',
@@ -217,6 +220,7 @@ const resources = {
       socialSecurity: 'Sécurité sociale',
       orderInformation: 'Informations de la Commande',
       eyeMeasurements: 'Mesures des Yeux',
+      delete_confirmation_order: 'Êtes-vous sûr de vouloir supprimer cette commande ?',
       
       // Eye Measurements
       leftEye: 'Œil gauche',

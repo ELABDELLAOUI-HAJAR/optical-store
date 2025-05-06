@@ -23,7 +23,7 @@ function Login() {
     <div 
       className="min-h-screen flex items-center justify-center relative" 
       style={{ 
-        backgroundImage: 'url("/login-bg.jpg")',
+        backgroundImage: `url("${process.env.PUBLIC_URL}/login-bg.jpg")`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
@@ -37,7 +37,7 @@ function Login() {
       <div className="max-w-md w-full space-y-8 p-8 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg shadow-xl relative">
         <div>
           <div className="w-32 h-32 mx-auto mb-4">
-            <img src="/logo.png" alt="Macula Optic" className="w-full h-full object-contain" />
+            <img src={process.env.PUBLIC_URL + '/logo.png'} alt="Macula Optic" className="w-full h-full object-contain" />
           </div>
           <h2 className="mt-2 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
             Macula Optic

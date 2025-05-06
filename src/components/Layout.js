@@ -33,11 +33,11 @@ function Layout({ children, darkMode, toggleDarkMode }) {
   };
 
   const navigation = [
-    { name: t('dashboard'), href: '/', icon: HomeIcon },
+    { name: t('home'), href: '/', icon: HomeIcon },
     { name: t('clients'), href: '/clients', icon: UserGroupIcon },
     { name: t('orders'), href: '/orders', icon: ClipboardDocumentListIcon },
     { name: t('products'), href: '/products', icon: ShoppingBagIcon },
-    { name: t('suppliers'), href: '/suppliers', icon: UserIcon },
+   // { name: t('suppliers'), href: '/suppliers', icon: UserIcon },
     { name: t('doctors'), href: '/doctors', icon: BuildingOffice2Icon },
   ];
 
@@ -62,7 +62,7 @@ function Layout({ children, darkMode, toggleDarkMode }) {
               <div className="flex-shrink-0 px-4 flex items-center">
                 <img
                   className="h-8 w-auto"
-                  src="/logo.png"
+                  src={`${process.env.PUBLIC_URL}/logo.png`}
                   alt="Optical Store"
                 />
               </div>
@@ -142,7 +142,7 @@ function Layout({ children, darkMode, toggleDarkMode }) {
             <div className="flex flex-shrink-0 items-center px-4">
               <img
                 className="h-8 w-auto"
-                src="/logo.png"
+                src={`${process.env.PUBLIC_URL}/logo.png`}
                 alt="Optical Store"
               />
             </div>

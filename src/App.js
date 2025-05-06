@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
+import { createHashRouter, RouterProvider, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
 import Clients from './pages/Clients';
 import Orders from './pages/Orders';
 import Products from './pages/Products';
-import Suppliers from './pages/Suppliers';
 import Users from './pages/Users';
 import Doctors from './pages/Doctors';
+import Home from './pages/Home';
 import Layout from './components/Layout';
 import './i18n';
 
@@ -43,13 +42,13 @@ function AppWrapper() {
   };
 
   return (
-      <RouterProvider router={createBrowserRouter([
+      <RouterProvider router={createHashRouter([
           { path: "/login", element: <Login /> },
-          { path: "/", element: <ProtectedRoute element={<Dashboard />} darkMode={darkMode} toggleDarkMode={toggleDarkMode} /> },
+          { path: "/", element: <ProtectedRoute element={<Home />} darkMode={darkMode} toggleDarkMode={toggleDarkMode} /> },
           { path: "/clients", element: <ProtectedRoute element={<Clients />} darkMode={darkMode} toggleDarkMode={toggleDarkMode} /> },
           { path: "/orders", element: <ProtectedRoute element={<Orders />} darkMode={darkMode} toggleDarkMode={toggleDarkMode} /> },
           { path: "/products", element: <ProtectedRoute element={<Products />} darkMode={darkMode} toggleDarkMode={toggleDarkMode} /> },
-          { path: "/suppliers", element: <ProtectedRoute element={<Suppliers />} darkMode={darkMode} toggleDarkMode={toggleDarkMode} /> },
+          //{ path: "/suppliers", element: <ProtectedRoute element={<Suppliers />} darkMode={darkMode} toggleDarkMode={toggleDarkMode} /> },
           { path: "/users", element: <ProtectedRoute element={<Users />} darkMode={darkMode} toggleDarkMode={toggleDarkMode} /> },
           { path: "/doctors", element: <ProtectedRoute element={<Doctors />} darkMode={darkMode} toggleDarkMode={toggleDarkMode} /> },
       ],

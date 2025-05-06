@@ -2,25 +2,112 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
-import { fetchProducts } from '../supabaseClient'; 
+import { fetchClients, fetchDoctors,fetchAvailableProducts } from '../supabaseClient'; 
 import { TrashIcon } from '@heroicons/react/24/outline';
 
-function OrderForm({ onSubmit, onClose }) {
+function OrderForm({ onSubmit, onCancel, initialData }) {
   const { t } = useTranslation();
   const [orderDate, setOrderDate] = useState(new Date());
   const [deliveryDate, setDeliveryDate] = useState(new Date());
   const [customerName, setCustomerName] = useState('');
   const [orderState, setOrderState] = useState('inProgress');
-  const [examinedBy, setExaminedBy] = useState('');
+  const [selectedDoctor, setSelectedDoctor] = useState('');
   const [socialSecurity, setSocialSecurity] = useState(false);
   const [products, setProducts] = useState([]);
+  const [clients, setClients] = useState([]);
+  const [doctors, setDoctors] = useState([]);
+  const [availableProducts, setAvailableProducts] = useState([]);
+
+  useEffect(() => {
+    const loadClients = async () => {
+      const clientsData = await fetchClients();
+      setClients(clientsData);
+    };
+
+    const loadDoctors = async () => {
+      const doctorsData = await fetchDoctors();
+      setDoctors(doctorsData);
+    };
+
+    const loadAvailableProducts = async () => {
+      const productsData = await fetchAvailableProducts();
+      setAvailableProducts(productsData);
+    };
+
+    const initializeOrderData = () => {
+      console.log(initialData);
+      if (initialData) {
+        setOrderDate(new Date(initialData.order_date)); 
+        setDeliveryDate(new Date(initialData.delivery_date)); 
+        setCustomerName(initialData.client_id || '');
+        setOrderState(initialData.status || 'inProgress');
+        setSelectedDoctor(initialData.doctor_id || '');
+        setSocialSecurity(initialData.social_security || false);
+        setGlassType(initialData.glass_type || 'mineral');
+        setVisionTypes({
+          nearSightedness: initialData.order_vision[0].nearSightedness || false,
+          farSightedness: initialData.order_vision[0].farSightedness || false,
+          progressive: initialData.order_vision[0].progressive || false,
+          solar: initialData.order_vision[0].solar || false
+        });
+        setTreatments({
+          white: initialData.order_treatment[0].white || false,
+          antiBlueLight: initialData.order_treatment[0].antiBlueLight || false,
+          antiReflexion: initialData.order_treatment[0].antiReflexion || false,
+          mirrored: initialData.order_treatment[0].mirrored || false,
+          transitions: initialData.order_treatment[0].transitions || false,
+          uniColor: initialData.order_treatment[0].uniColor || false,
+          degraded: initialData.order_treatment[0].degraded || false,
+          polarized: initialData.order_treatment[0].polarized || false
+        });
+        setGlassIndex(initialData.glass_index || 0);
+        
+        setLeftEye({
+          sph: initialData.left_sph || 0,
+          cyl: initialData.left_cyl || 0,
+          axis: initialData.left_axis || 0,
+          add: initialData.left_add || 0,
+          ep: initialData.left_ep || 0,
+          hp: initialData.left_hp || 0,
+          prism: initialData.left_prism || 0,
+          prismAxis: initialData.left_prism_axis || 0,
+        });
+        setRightEye({
+          sph: initialData.right_sph || 0,
+          cyl: initialData.right_cyl || 0,
+          axis: initialData.right_axis || 0,
+          add: initialData.right_add || 0,
+          ep: initialData.right_ep || 0,
+          hp: initialData.right_hp || 0,
+          prism: initialData.right_prism || 0,
+          prismAxis: initialData.right_prism_axis || 0,
+        });
+
+        const enrichedProducts = initialData.order_product.map(orderProduct => ({
+          id: orderProduct.product_id, 
+          name: orderProduct.product.name || '', 
+          quantity: orderProduct.quantity || 0,
+          price: orderProduct.unit_price || 0,
+          stock_quantity: orderProduct.product.stock_quantity || 0, 
+          selling_price: orderProduct.product.selling_price || 0 
+        }));
+
+        setProducts(enrichedProducts);
+      }
+    };
+
+    loadClients();
+    loadDoctors();
+    loadAvailableProducts();
+    initializeOrderData();
+  }, [initialData]);
 
   // Eye measurements
   const [leftEye, setLeftEye] = useState({
-    sph: '', cyl: '', axis: '', add: '', ep: '', hp: '', prism: '', prismAxis: ''
+    sph: 0, cyl: 0, axis: 0, add: 0, ep: 0, hp: 0, prism: 0, prismAxis: 0
   });
   const [rightEye, setRightEye] = useState({
-    sph: '', cyl: '', axis: '', add: '', ep: '', hp: '', prism: '', prismAxis: ''
+    sph: 0, cyl: 0, axis: 0, add: 0, ep: 0, hp: 0, prism: 0, prismAxis: 0
   });
 
   // Vision types
@@ -43,25 +130,17 @@ function OrderForm({ onSubmit, onClose }) {
     degraded: false,
     polarized: false
   });
-  const [glassIndex, setGlassIndex] = useState('');
-
-  const [availableProducts, setAvailableProducts] = useState([]);
+  const [glassIndex, setGlassIndex] = useState(0);
 
   const [showProductModal, setShowProductModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   const totalAmount = products.reduce((total, product) => {
-      return total + (product.quantity * product.unitPrice);
+      return total + (product.quantity * product.price);
   }, 0);
 
-  // Static product data for demonstration
-  const staticProducts = [
-    { id: 1, name: 'Product A', unitPrice: 10.00, stockQuantity: 100, reference: 'REF001', brand: 'Brand A', color: 'Red' },
-    { id: 2, name: 'Product B', unitPrice: 15.00, stockQuantity: 50, reference: 'REF002', brand: 'Brand B', color: 'Blue' },
-    { id: 3, name: 'Product C', unitPrice: 20.00, stockQuantity: 30, reference: 'REF003', brand: 'Brand C', color: 'Green' }
-  ];
 
-  const filteredProducts = staticProducts.filter(product => 
+  const filteredProducts = availableProducts.filter(product => 
     product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     product.reference.toLowerCase().includes(searchQuery.toLowerCase()) ||
     product.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -89,13 +168,18 @@ function OrderForm({ onSubmit, onClose }) {
     setProducts(prev => prev.map((product, i) => i === index ? { ...product, quantity: newQuantity } : product));
   };
 
+  const handleSellingPriceChange = (index, value) => {
+    const newPrice = parseFloat(value) || 0;
+    setProducts(prev => prev.map((product, i) => i === index ? { ...product, price: newPrice } : product));
+  };
+
   const handleDeleteProduct = (index) => {
     setProducts(prev => prev.filter((product, i) => i !== index));
   };
 
   const handleProductSelection = (product, checked) => {
     if (checked) {
-      setProducts(prev => [...prev, { ...product, quantity: 1 }]); // Initialize quantity to 1
+      setProducts(prev => [...prev, { ...product, quantity: 1, price: product.selling_price }]); // Initialize quantity to 1
     } else {
       setProducts(prev => prev.filter(p => p.id !== product.id));
     }
@@ -108,18 +192,14 @@ function OrderForm({ onSubmit, onClose }) {
       deliveryDate,
       customerName,
       orderState,
-      examinedBy,
+      selectedDoctor,
       socialSecurity,
       leftEye,
       rightEye,
-      visionTypes,
-      glassSpecifications: {
-        type: glassType,
-        treatments,
-        index: glassIndex
-      },
-      products
-    });
+      glassType,
+      glassIndex,
+      totalAmount,
+    }, visionTypes, treatments, products);
   };
 
   const renderEyeMeasurements = (eye, values, onChange) => {
@@ -161,8 +241,10 @@ function OrderForm({ onSubmit, onClose }) {
                 {t('orderDate')}
               </label>
               <DatePicker
+                required
                 selected={orderDate}
                 onChange={date => setOrderDate(date)}
+                dateFormat="dd/MM/yyyy"
                 className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm dark:text-white"
               />
             </div>
@@ -174,6 +256,7 @@ function OrderForm({ onSubmit, onClose }) {
               <DatePicker
                 selected={deliveryDate}
                 onChange={date => setDeliveryDate(date)}
+                dateFormat="dd/MM/yyyy"
                 className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm dark:text-white"
               />
             </div>
@@ -182,12 +265,20 @@ function OrderForm({ onSubmit, onClose }) {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 {t('customerName')}
               </label>
-              <input
-                type="text"
+              <select
+                required
+                name="customerName"
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
                 className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm dark:text-white"
-              />
+              >
+                <option value="">Select Client</option>
+                {clients.map((client) => (
+                  <option key={client.id} value={client.id}>
+                    {client.first_name} {client.last_name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>
@@ -195,6 +286,8 @@ function OrderForm({ onSubmit, onClose }) {
                 {t('orderState')}
               </label>
               <select
+                required
+                name="orderState"
                 value={orderState}
                 onChange={(e) => setOrderState(e.target.value)}
                 className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm dark:text-white"
@@ -208,12 +301,19 @@ function OrderForm({ onSubmit, onClose }) {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 {t('examinedBy')}
               </label>
-              <input
-                type="text"
-                value={examinedBy}
-                onChange={(e) => setExaminedBy(e.target.value)}
+              <select
+                name="doctorName"
+                value={selectedDoctor}
+                onChange={(e) => setSelectedDoctor(e.target.value)}
                 className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm dark:text-white"
-              />
+              >
+                <option value="">Select Doctor</option>
+                {doctors.map((doctor) => (
+                  <option key={doctor.id} value={doctor.id}>
+                    Dr. {doctor.first_name} {doctor.last_name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="flex items-center">
@@ -323,8 +423,8 @@ function OrderForm({ onSubmit, onClose }) {
                   value={glassIndex}
                   onChange={(e) => setGlassIndex(e.target.value)}
                   step="0.01"
-                  min="1"
-                  max="2"
+                  //min="1"
+                  //max="2"
                   className="block w-32 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm dark:text-white"
                 />
               </div>
@@ -370,6 +470,7 @@ function OrderForm({ onSubmit, onClose }) {
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('productName')}</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('quantity')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('sellingPrice')}</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('unitPrice')}</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('stockQuantity')}</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('subtotal')}</th>
@@ -380,10 +481,11 @@ function OrderForm({ onSubmit, onClose }) {
               {products.map((product, index) => (
                 <tr key={index}>
                   <td className="px-6 py-4 whitespace-nowrap">{product.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap"><input type="number" value={product.quantity} onChange={(e) => handleQuantityChange(index, e.target.value)} /></td>
-                  <td className="px-6 py-4 whitespace-nowrap">{product.unitPrice}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{product.stockQuantity}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{(product.quantity * product.unitPrice).toFixed(2)}</td>
+                  <td className="px-6 py-4 whitespace-nowrap"><input type="number" min="1" max={product.stock_quantity} value={product.quantity} onChange={(e) => handleQuantityChange(index, e.target.value)} /></td>
+                  <td className="px-6 py-4 whitespace-nowrap"><input type="number" value={product.price} onChange={(e) => handleSellingPriceChange(index, e.target.value)} /></td>
+                  <td className="px-6 py-4 whitespace-nowrap">{product.selling_price}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{product.stock_quantity}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{(product.quantity * product.price).toFixed(2)}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <button 
                       type="button"
@@ -420,7 +522,7 @@ function OrderForm({ onSubmit, onClose }) {
           </button>
           <button
             type="button"
-            onClick={onClose}
+            onClick={onCancel}
             className="mt-3 inline-flex w-full justify-center rounded-md bg-white dark:bg-gray-700 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-300 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 sm:mt-0 sm:w-auto"
           >
             {t('cancel')}
@@ -448,7 +550,7 @@ function OrderForm({ onSubmit, onClose }) {
                       type="checkbox"
                       onChange={(e) => handleProductSelection(product, e.target.checked)}
                     />
-                    <span>{product.name} - {product.unitPrice} {t('currency')} (Ref: {product.reference}, Brand: {product.brand}, Color: {product.color})</span>
+                    <span> {product.name} - {product.selling_price} {t('currency')} (<b>Ref:</b> {product.reference}, <b>Brand:</b> {product.brand}, <b>Color:</b> {product.color})</span>
                   </div>
                 </div>
               ))}

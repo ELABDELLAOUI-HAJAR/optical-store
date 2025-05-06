@@ -175,7 +175,7 @@ function Clients() {
                             {client.phone_number}
                           </td>
                           <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-                            ${client.debit.toFixed(2)}
+                            {client.debit.toFixed(2)} {t('currency')}
                           </td>
                           <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
                             <div className="flex items-center space-x-4">
