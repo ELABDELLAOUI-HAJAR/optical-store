@@ -138,9 +138,9 @@ function Clients() {
                         <th scope="col" className="hidden px-3 py-3.5 text-left text-sm font-bold uppercase tracking-wider text-gray-900 dark:text-white sm:table-cell">
                           {t('phone')}
                         </th>
-                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-bold uppercase tracking-wider text-gray-900 dark:text-white">
+                        {/* <th scope="col" className="px-3 py-3.5 text-left text-sm font-bold uppercase tracking-wider text-gray-900 dark:text-white">
                           {t('debit')}
-                        </th>
+                        </th> */}
                         <th scope="col" className="px-3 py-3.5 text-left text-sm font-bold uppercase tracking-wider text-gray-900 dark:text-white">
                           {t('actions')}
                         </th>
@@ -174,9 +174,9 @@ function Clients() {
                           <td className="hidden whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400 sm:table-cell">
                             {client.phone_number}
                           </td>
-                          <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
+                          {/* <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
                             {client.debit.toFixed(2)} {t('currency')}
-                          </td>
+                          </td> */}
                           <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
                             <div className="flex items-center space-x-4">
                               <button

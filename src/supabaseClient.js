@@ -328,13 +328,201 @@ export const fetchOrders = async () => {
       order_treatment (
         *
       )
-    `);
+    `)
+    .order('order_date', { ascending: false });
 
   if (error) {
     console.error('Error fetching orders:', error);
     return [];
   }
   return orders;
+};
+
+export const updateOrder = async (orderId, orderData, orderProducts, orderTreatments, orderVision) => {
+  //Fetch existing order and products
+  const {data: existingOrder, error: fetchError } = await supabase
+    .from('orders')
+    .select('*, products: order_product (*, product: product(stock_quantity))')
+    .eq('id', orderId)
+    .single();
+
+  if (fetchError) {
+    console.error('Error fetching order:', fetchError);
+    return null;
+  }
+
+  //Identify deleted Products
+  const deletedProducts = existingOrder.products.filter(product => 
+    !orderProducts.some(orderProduct => orderProduct.id === product.product_id)
+  );
+
+  //Identify updated Products
+  const updatedProducts = existingOrder.products.filter(product => 
+    orderProducts.some(orderProduct => orderProduct.id === product.product_id)
+  );
+
+  //Identify added Products
+  const addedProducts = orderProducts.filter(orderProduct=> 
+    !existingOrder.products.some(product => orderProduct.id === product.product_id)
+  );
+
+  //Update stock for deleted products
+  for (const product of deletedProducts) {
+    const product_id = product.product_id;
+    const stock_quantity = product.product.stock_quantity;
+    const newQuantity = stock_quantity + product.quantity;
+    const { error: updateError } = await supabase
+      .from('product')
+      .update({ stock_quantity: newQuantity })
+      .eq('id', product_id);
+    if (updateError) {
+      console.error(`Error updating product quantity for deleted products: ${updateError.message}`);
+      return null;
+    }
+
+    const { error: deleteError } = await supabase
+        .from('order_product')
+        .delete()
+        .eq('order_id', orderId)
+        .eq('product_id', product_id);
+    if (deleteError) {
+      console.error(`Error deleting order product for deleted products: ${deleteError.message}`);
+      return null;
+    }
+  }
+
+  //Update updated products
+  for (const updatedProduct of updatedProducts) {
+    const existingProduct = existingOrder.products.find(p => p.product_id === updatedProduct.product_id);
+    const newProductData = orderProducts.find(p => p.id === updatedProduct.product_id);
+    
+    if (existingOrder && newProductData) {
+      const quantityDiff = existingProduct.quantity - newProductData.quantity;
+
+      const { error: updateError } = await supabase
+        .from('product')
+        .update({ stock_quantity: newProductData.stock_quantity + quantityDiff
+         })
+        .eq('id', existingProduct.product_id);
+      if (updateError) {
+        console.error(`Error updating product quantity for updated products: ${updateError.message}`);
+        return null;
+      }
+
+      const { error: updateOrderProductError } = await supabase
+        .from('order_product')
+        .update({ quantity: newProductData.quantity,
+          unit_price: newProductData.price,
+          sub_total: (newProductData.price * newProductData.quantity).toFixed(2)
+         })
+        .eq('order_id', orderId)
+        .eq('product_id', existingProduct.product_id);
+      if (updateOrderProductError) {
+        console.error(`Error updating order product quantity for updated products: ${updateOrderProductError.message}`);
+        return null;
+      }
+    }
+  }
+
+  //Update added products
+  for (const addedProduct of addedProducts) {
+    const { id, stock_quantity } = addedProduct;
+    const newQuantity = stock_quantity - addedProduct.quantity;
+    const { error: updateError } = await supabase
+      .from('product')
+        .update({ stock_quantity: newQuantity })
+        .eq('id', id);
+    if (updateError) {
+      console.error(`Error updating product quantity for added products: ${updateError.message}`);  
+      return null;
+    }
+
+    const { error: insertError } = await supabase
+      .from('order_product')
+      .insert({
+            order_id: orderId,
+            product_id: id,
+            quantity: addedProduct.quantity,
+            unit_price: addedProduct.price,
+            sub_total: (addedProduct.price * addedProduct.quantity).toFixed(2)
+          });
+    if (insertError) {
+      console.error(`Error inserting order product for added products: ${insertError.message}`);
+      return null;
+    }
+  }
+
+  //Update order
+  const { error: updateOrderError } = await supabase
+      .from('orders')
+      .update({
+        delivery_date: orderData.deliveryDate,
+        doctor_id: orderData.selectedDoctor,
+        social_security: orderData.socialSecurity,
+        left_add:orderData.leftEye.add,
+        left_axis:orderData.leftEye.axis,
+        left_cyl:orderData.leftEye.cyl,
+        left_ep:orderData.leftEye.ep,
+        left_hp:orderData.leftEye.hp,
+        left_prism:orderData.leftEye.prism,
+        left_prism_axis:orderData.leftEye.prismAxis,
+        left_sph:orderData.leftEye.sph,
+        right_add:orderData.rightEye.add,
+        right_axis:orderData.rightEye.axis,
+        right_cyl:orderData.rightEye.cyl,
+        right_ep:orderData.rightEye.ep,
+        right_hp:orderData.rightEye.hp,
+        right_prism:orderData.rightEye.prism,
+        right_prism_axis:orderData.rightEye.prismAxis,
+        right_sph:orderData.rightEye.sph,
+        glass_type:orderData.glassType,
+        glass_index:orderData.glassIndex,
+        total_amount: orderData.totalAmount,
+        status: orderData.orderState,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', orderId);
+  if (updateOrderError) {
+    console.error(`Error updating order: ${updateOrderError.message}`);
+    return null;
+  }
+
+  //Update order vision
+  const { error: updateOrderVisionError } = await supabase
+    .from('order_vision')
+    .update({
+      farSightedness:orderVision.farSightedness,
+      nearSightedness:orderVision.nearSightedness,
+      progressive:orderVision.progressive,
+      solar:orderVision.solar,
+    })
+    .eq('order_id', orderId);
+  if (updateOrderVisionError) {
+    console.error(`Error updating order vision: ${updateOrderVisionError.message}`);
+    return null;
+  }
+
+  //Update order treatment
+  const { error: updateOrderTreatmentError } = await supabase
+    .from('order_treatment')
+    .update({
+      white:orderTreatments.white,
+      antiBlueLight:orderTreatments.antiBlueLight,
+      antiReflexion:orderTreatments.antiReflexion,
+      degraded:orderTreatments.degraded,
+      polarized:orderTreatments.polarized,
+      mirrored:orderTreatments.mirrored,
+      transitions:orderTreatments.transitions,
+      uniColor:orderTreatments.uniColor,
+    })
+    .eq('order_id', orderId);
+  if (updateOrderTreatmentError) {
+    console.error(`Error updating order treatment: ${updateOrderTreatmentError.message}`);
+    return null;
+  }
+
+  return true;
+
 };
 
 export { fetchClients , fetchDoctors};

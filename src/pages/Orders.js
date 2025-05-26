@@ -5,7 +5,7 @@ import OrderForm from '../components/OrderForm';
 import PageTitle from '../components/PageTitle';
 import ModalTitle from '../components/ModalTitle';
 import SearchBar from '../components/SearchBar';
-import { insertOrder, fetchOrders } from '../supabaseClient';
+import { insertOrder, fetchOrders, updateOrder } from '../supabaseClient';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 
@@ -78,6 +78,7 @@ function Orders() {
   };
 
   const handlePrintOrder = async (order) => {
+    console.log('print order', order);
     try {
       const invoiceDiv = document.createElement('div');
       invoiceDiv.style.position = 'absolute';
@@ -99,7 +100,7 @@ function Orders() {
           
           <h2 class="invoice-title"><b>Facture :</b> ${order.id}</h2>
 
-          <p class="client-name"><b>Nom du client :</b> ${order.client.first_name} ${order.client.last_name}</p>
+          <p class="client-name"><b>Nom du client :</b> ${order.client.first_name.toUpperCase()} ${order.client.last_name.toUpperCase()}</p>
           
           <table class="prescription-table">
             <thead>
@@ -114,17 +115,17 @@ function Orders() {
             <tbody>
               <tr>
                 <td>OD</td>
-                <td>${order.right_eye_sph || ''}</td>
-                <td>${order.right_eye_cyl || ''}</td>
-                <td>${order.right_eye_axe || ''}</td>
-                <td>${order.right_eye_add || ''}</td>
+                <td>${order.right_sph || '0'}</td>
+                <td>${order.right_cyl || '0'}</td>
+                <td>${order.right_axis || '0'}</td>
+                <td>${order.right_add || '0'}</td>
               </tr>
               <tr>
                 <td>OG</td>
-                <td>${order.left_eye_sph || ''}</td>
-                <td>${order.left_eye_cyl || ''}</td>
-                <td>${order.left_eye_axe || ''}</td>
-                <td>${order.left_eye_add || ''}</td>
+                <td>${order.left_sph || '0'}</td>
+                <td>${order.left_cyl || '0'}</td>
+                <td>${order.left_axis || '0'}</td>
+                <td>${order.left_add || '0'}</td>
               </tr>
             </tbody>
           </table>
@@ -137,9 +138,9 @@ function Orders() {
             </thead>
             <tbody>
               <tr>
-                <td>${order.vision_types && order.vision_types.includes('near') ? '<label><input type="checkbox" checked /> Vision de près</label>' : '<label><input type="checkbox" /> Vision de près</label>'}</td>
-                <td>${order.vision_types && order.vision_types.includes('far') ? '<label><input type="checkbox" checked /> Vision de loin</label>' : '<label><input type="checkbox" /> Vision de loin</label>'}</td>
-                <td>${order.vision_types && order.vision_types.includes('progressive') ? '<label><input type="checkbox" checked /> Progressive</label>' : '<label><input type="checkbox" /> Progressive</label>'}</td>
+                <td>${order.order_vision[0].nearSightedness ? '<label><input type="checkbox" checked /> Vision de près</label>' : '<label><input type="checkbox" /> Vision de près</label>'}</td>
+                <td>${order.order_vision[0].farSightedness ? '<label><input type="checkbox" checked /> Vision de loin</label>' : '<label><input type="checkbox" /> Vision de loin</label>'}</td>
+                <td>${order.order_vision[0].progressive ? '<label><input type="checkbox" checked /> Progressive</label>' : '<label><input type="checkbox" /> Progressive</label>'}</td>
               </tr>
             </tbody>
           </table>
@@ -152,18 +153,18 @@ function Orders() {
             </thead>
             <tbody>
               <tr>
-                <td>${order.treatments && order.treatments.includes('white') ? '<label><input type="checkbox" checked />Blanc</label>' : '<label><input type="checkbox" />Blanc</label>'}</td>
-                <td>${order.treatments && order.treatments.includes('anti_led') ? '<label><input type="checkbox" checked />Anti-LED</label>' : '<label><input type="checkbox" />Anti-LED</label>'}</td>
-                <td>${order.treatments && order.treatments.includes('anti_reflet') ? '<label><input type="checkbox" checked />Anti-Reflet</label>' : '<label><input type="checkbox" />Anti-Reflet</label>'}</td>
+                <td>${order.order_treatment[0].white ? '<label><input type="checkbox" checked />Blanc</label>' : '<label><input type="checkbox" />Blanc</label>'}</td>
+                <td>${order.order_treatment[0].antiBlueLight ? '<label><input type="checkbox" checked />Anti-LED</label>' : '<label><input type="checkbox" />Anti-LED</label>'}</td>
+                <td>${order.order_treatment[0].antiReflexion ? '<label><input type="checkbox" checked />Anti-Reflet</label>' : '<label><input type="checkbox" />Anti-Reflet</label>'}</td>
               </tr>
               <tr>
-                <td>${order.treatments && order.treatments.includes('transitions') ? '<label><input type="checkbox" checked />Transitions</label>' : '<label><input type="checkbox" />Transitions</label>'}</td>
-                <td>${order.treatments && order.treatments.includes('uni_color') ? '<label><input type="checkbox" checked />Uni-couleur</label>' : '<label><input type="checkbox" />Uni-couleur</label>'}</td>
-                <td>${order.treatments && order.treatments.includes('degrade') ? '<label><input type="checkbox" checked />Dégradé</label>' : '<label><input type="checkbox" />Dégradé</label>'}</td>
+                <td>${order.order_treatment[0].transitions ? '<label><input type="checkbox" checked />Transitions</label>' : '<label><input type="checkbox" />Transitions</label>'}</td>
+                <td>${order.order_treatment[0].uniColor ? '<label><input type="checkbox" checked />Uni-couleur</label>' : '<label><input type="checkbox" />Uni-couleur</label>'}</td>
+                <td>${order.order_treatment[0].degraded ? '<label><input type="checkbox" checked />Dégradé</label>' : '<label><input type="checkbox" />Dégradé</label>'}</td>
               </tr>
               <tr>
-                <td>${order.treatments && order.treatments.includes('mirror') ? '<label><input type="checkbox" checked />Miroir</label>' : '<label><input type="checkbox" />Miroir</label>'}</td>
-                <td>${order.treatments && order.treatments.includes('polarized') ? '<label><input type="checkbox" checked />Polarisé</label>' : '<label><input type="checkbox" />Polarisé</label>'}</td>
+                <td>${order.order_treatment[0].mirrored ? '<label><input type="checkbox" checked />Miroir</label>' : '<label><input type="checkbox" />Miroir</label>'}</td>
+                <td>${order.order_treatment[0].polarized ? '<label><input type="checkbox" checked />Polarisé</label>' : '<label><input type="checkbox" />Polarisé</label>'}</td>
                 <td></td>
               </tr>
             </tbody>
@@ -179,12 +180,12 @@ function Orders() {
               </tr>
             </thead>
             <tbody>
-              ${(order.products && order.products.map(product => `
+              ${(order.order_product && order.order_product.map(product => `
                 <tr>
-                  <td>${product.quantity || 1}</td>
-                  <td>${product.name || ''}</td>
-                  <td>${product.price || 0} ${t('currency')}</td>
-                  <td>${(product.quantity || 1) * (product.price || 0)} ${t('currency')}</td>
+                  <td>${product.quantity}</td>
+                  <td>${product.product.name}</td>
+                  <td>${product.unit_price} ${t('currency')}</td>
+                  <td>${product.sub_total} ${t('currency')}</td>
                 </tr>
               `).join('')) || (
                 `<tr>
@@ -218,8 +219,7 @@ function Orders() {
         }
         .header {
           text-align: center;
-          margin-bottom: 10px;
-          margin-top: 10px;
+          margin: 8px 0;
           width: 100%;
         }
         .company-logo {
@@ -227,7 +227,6 @@ function Orders() {
           height: auto;
           display: block;
         }
-          
         .footer {
           position: absolute;
           bottom: 5px;
@@ -241,8 +240,11 @@ function Orders() {
         .invoice h3{
           text-align: right;
         }
-        .invoice h1, .invoice h2, .invoice h3 {
-          margin: 10px 0;
+        .invoice h1, .invoice h3 {
+          margin: 5px 0;
+        }
+        .invoice h2{
+          margin-bottom: 5px;
         }
         .invoice table {
           width: 100%;
@@ -257,6 +259,7 @@ function Orders() {
         }
         .client-name {
           font-size: 1.2em;
+          margin-bottom: 5px;
         }
         .invoice table, .invoice th, .invoice td {
           border: 1px solid #ddd;
@@ -269,7 +272,7 @@ function Orders() {
           font-weight: bold;
           text-align: right;
           font-size: 1.2em;
-          margin-top: 20px;
+          margin-top: 15px;
         }
         .vision-table th, .treatments-table th ,
         .items-table th, .prescription-table th,
@@ -282,7 +285,7 @@ function Orders() {
           vertical-align: middle;
           height: 15px;
         }
-        .vision-table td, .treatments-table td {
+        .vision-table td, .treatments-table td, .prescription-table td {
           text-align: center;
           padding: 10px;
           vertical-align: middle;
@@ -298,8 +301,14 @@ function Orders() {
         .vision-table input[type="checkbox"], .treatments-table input[type="checkbox"] {
           margin: 0;
         }
-        .items-table {
-          margin-top: 15px;
+        .items-table, .vision-table, .treatments-table{
+          margin-top: 5px;
+        }
+        
+        .items-table td:nth-child(1),
+        .items-table td:nth-child(3),
+        .items-table td:nth-child(4) {
+          text-align: center;
         }
 
       `;
@@ -332,10 +341,10 @@ function Orders() {
     console.log(products);
 
     if (editingOrder) {
-      console.log('Editing order:', editingOrder);
-      /*const result = await updateOrder(editingOrder.id, orderData);
+      console.log('Editing order:', orderData, visionTypes, treatments, products);
+      const result = await updateOrder(editingOrder.id, orderData, products, treatments, visionTypes);
       if (result) 
-        console.log('Order updated successfully:', result);*/
+        console.log('Order updated successfully:', result);
     } else {
       // Add new order
       const result = await insertOrder(orderData, products, treatments, visionTypes);

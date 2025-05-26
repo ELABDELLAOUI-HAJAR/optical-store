@@ -32,6 +32,8 @@ const resources = {
       previous: 'Previous',
       
       // Order Form
+      editorder: 'Edit Order',
+      neworder: 'New Order',
       orderDate: 'Order Date',
       deliveryDate: 'Delivery Date',
       customerName: 'Client Name',
@@ -210,6 +212,8 @@ const resources = {
       previous: 'Précédent',
       
       // Order Form
+      editorder: 'Modifier la commande',
+      neworder: 'Nouvelle commande',
       orderDate: 'Date de commande',
       deliveryDate: 'Date de livraison',
       customerName: 'Nom du client',
