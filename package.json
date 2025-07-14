@@ -12,7 +12,6 @@
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.6.2",
-    "electron": "^36.1.0",
     "html2canvas": "^1.4.1",
     "i18next": "^23.16.8",
     "jspdf": "^3.0.1",
@@ -30,7 +29,8 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "start-electron": "electron ."
+    "start-electron": "electron .",
+    "package-win": "npm run build && electron-packager . --platform=win32 --arch=x64 --out=dist --overwrite --icon=public/favicon.ico --prune=true"
   },
   "eslintConfig": {
     "extends": [
@@ -53,7 +53,8 @@
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "autoprefixer": "^10.4.16",
-    "electron": "^35.0.0",
+    "electron": "^36.7.0",
+    "electron-packager": "^17.1.2",
     "postcss": "^8.4.32",
     "tailwindcss": "^3.3.6"
   }

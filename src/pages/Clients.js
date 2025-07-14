@@ -6,6 +6,8 @@ import PageTitle from '../components/PageTitle';
 import ModalTitle from '../components/ModalTitle';
 import SearchBar from '../components/SearchBar';
 import { saveClient, fetchClients, deleteClient, updateClient } from '../supabaseClient'; 
+import ConfirmationModal from '../components/ConfirmationModal';
+import NotificationModal from '../components/NotificationModal';
 
 function Clients() {
   const { t } = useTranslation();
@@ -17,6 +19,11 @@ function Clients() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const rowsPerPage = 5;
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [confirmClientId, setConfirmClientId] = useState(null);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState('');
+  const [notificationType, setNotificationType] = useState('success');
 
   const getClients = useCallback(async () => {
     const clientData = await fetchClients();
@@ -62,10 +69,27 @@ function Clients() {
   };
 
   const handleDeleteClient = async(clientId) => {
-    if (window.confirm(t('delete_confirmation_client'))) {
-      await deleteClient(clientId);
+    setConfirmClientId(clientId);
+    setIsConfirmModalOpen(true);
+  };
+
+  const handleConfirmDelete = async() => {
+    try {
+      await deleteClient(confirmClientId);
+      // Refresh the clients list
       setCurrentPage(1);
       getClients();
+      //alert(t('client_deleted_successfully'));
+      setNotificationMessage(t('client_deleted_successfully'));
+      setNotificationType('success');
+      setIsNotificationOpen(true);
+      setIsConfirmModalOpen(false);  // Close the modal after successful deletion
+    } catch (error) {
+      console.error('Error deleting client:', error);
+      //alert(t('delete_client_error'));
+      setNotificationMessage(t('delete_client_error'));
+      setNotificationType('error');
+      setIsNotificationOpen(true);
     }
   };
 
@@ -252,6 +276,21 @@ function Clients() {
           </div>
         </div>
       )}
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={isConfirmModalOpen}
+        onClose={() => setIsConfirmModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        message={t('delete_confirmation_client')}
+        title={t('delete')}
+      />
+      {/* Notification Modal */}
+      <NotificationModal
+        isOpen={isNotificationOpen}
+        onClose={() => setIsNotificationOpen(false)}
+        message={notificationMessage}
+        type={notificationType}
+      />
     </div>
   );
 }

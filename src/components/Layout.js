@@ -7,7 +7,6 @@ import {
   UserGroupIcon,
   ShoppingBagIcon,
   ClipboardDocumentListIcon,
-  UserIcon,
   SunIcon,
   MoonIcon,
   LanguageIcon,

@@ -468,26 +468,26 @@ function OrderForm({ onSubmit, onCancel, initialData }) {
           </div>
           <button onClick={() => setShowProductModal(true)} type="button" className="mt-4 mb-4 bg-blue-500 text-white px-4 py-2 rounded">{t('addProduct')}</button>
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50 dark:bg-gray-600">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('productName')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('quantity')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('sellingPrice')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('unitPrice')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('stockQuantity')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('subtotal')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('delete')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-white">{t('productName')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-white">{t('quantity')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-white">{t('sellingPrice')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-white">{t('unitPrice')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-white">{t('stockQuantity')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-white">{t('subtotal')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-white">{t('delete')}</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-700">
               {products.map((product, index) => (
                 <tr key={index}>
-                  <td className="px-6 py-4 whitespace-nowrap">{product.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap"><input type="number" min="1" max={product.stock_quantity} value={product.quantity} onChange={(e) => handleQuantityChange(index, e.target.value)} /></td>
-                  <td className="px-6 py-4 whitespace-nowrap"><input type="number" value={product.price} onChange={(e) => handleSellingPriceChange(index, e.target.value)} /></td>
-                  <td className="px-6 py-4 whitespace-nowrap">{product.selling_price}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{product.stock_quantity}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{(product.quantity * product.price).toFixed(2)}</td>
+                  <td className="px-6 py-4 whitespace-nowrap dark:text-white">{product.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap dark:text-white"><input className="dark:bg-gray-600" type="number" min="1" max={product.stock_quantity} value={product.quantity} onChange={(e) => handleQuantityChange(index, e.target.value)} /></td>
+                  <td className="px-6 py-4 whitespace-nowrap dark:text-white"><input className="dark:bg-gray-600" type="number" value={product.price} onChange={(e) => handleSellingPriceChange(index, e.target.value)} /></td>
+                  <td className="px-6 py-4 whitespace-nowrap dark:text-white">{product.selling_price}</td>
+                  <td className="px-6 py-4 whitespace-nowrap dark:text-white">{product.stock_quantity}</td>
+                  <td className="px-6 py-4 whitespace-nowrap dark:text-white">{(product.quantity * product.price).toFixed(2)}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <button 
                       type="button"
@@ -507,7 +507,7 @@ function OrderForm({ onSubmit, onCancel, initialData }) {
                   <h4 className="text-lg font-medium text-gray-900 dark:text-white mr-4">
                       {t('totalAmount')} :
                   </h4>
-                  <p className="text-xl font-bold">
+                  <p className="text-xl font-bold text-gray-900 dark:text-white">
                       {totalAmount.toFixed(2)} {t('currency')}
                   </p>
               </div>
@@ -535,7 +535,7 @@ function OrderForm({ onSubmit, onCancel, initialData }) {
       {/* Modal for product selection */}
       {showProductModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white rounded-lg p-6">
+          <div className="bg-white rounded-lg p-6 dark:bg-gray-700 dark:text-white">
             <h2 className="text-lg font-semibold">{t('selectProducts')}</h2>
             <input
               type="text"

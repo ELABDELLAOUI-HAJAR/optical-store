@@ -33,7 +33,6 @@ const resources = {
       
       // Order Form
       editorder: 'Edit Order',
-      neworder: 'New Order',
       orderDate: 'Order Date',
       deliveryDate: 'Delivery Date',
       customerName: 'Client Name',
@@ -45,6 +44,8 @@ const resources = {
       orderInformation: 'Order Information',
       eyeMeasurements: 'Eye Measurements',
       delete_confirmation_order: 'Are you sure you want to delete this order?',
+      order_deleted_successfully: 'Order deleted successfully',
+      delete_order_error: 'Error deleting order. Please try again.',
       
       // Eye Measurements
       leftEye: 'Left Eye',
@@ -79,6 +80,8 @@ const resources = {
       editclient: 'Edit Client',
       delete_confirmation_client: 'Are you sure you want to delete this client?',
       clientInformation: 'Client Information',
+      client_deleted_successfully: 'Client deleted successfully',
+      delete_client_error: 'Error deleting client. Please try again.',
       
       // Dashboard
       welcomeBack: 'Welcome Back',
@@ -112,6 +115,8 @@ const resources = {
       glassType: 'Glass Type',
       select: 'Select...',
       delete_confirmation_product: 'Are you sure you want to delete this product?',
+      product_deleted_successfully: 'Product deleted successfully',
+      delete_product_error: 'Error deleting product. Please try again.',
       
       // Product Types
       frame: 'Frame',
@@ -151,6 +156,8 @@ const resources = {
       email: 'Email',
       address: 'Address',
       delete_confirmation_doctor: 'Are you sure you want to delete this doctor?',
+      doctor_deleted_successfully: 'Doctor deleted successfully',
+      delete_doctor_error: 'Error deleting doctor. Please try again.',
       
       // Search
       search: 'Search',
@@ -213,7 +220,6 @@ const resources = {
       
       // Order Form
       editorder: 'Modifier la commande',
-      neworder: 'Nouvelle commande',
       orderDate: 'Date de commande',
       deliveryDate: 'Date de livraison',
       customerName: 'Nom du client',
@@ -225,6 +231,8 @@ const resources = {
       orderInformation: 'Informations de la Commande',
       eyeMeasurements: 'Mesures des Yeux',
       delete_confirmation_order: 'Êtes-vous sûr de vouloir supprimer cette commande ?',
+      order_deleted_successfully: 'Commande supprimée avec succès',
+      delete_order_error: 'Erreur lors de la suppression de la commande. Veuillez réessayer.',
       
       // Eye Measurements
       leftEye: 'Œil gauche',
@@ -259,6 +267,8 @@ const resources = {
       editclient: 'Modifier le Client',
       delete_confirmation_client: 'Êtes-vous sûr de vouloir supprimer ce client ?',
       clientInformation: 'Informations du Client',
+      client_deleted_successfully: 'Client supprimé avec succès',
+      delete_client_error: 'Erreur lors de la suppression du client. Veuillez réessayer.',
       
       // Dashboard
       welcomeBack: 'Bienvenue',
@@ -292,6 +302,8 @@ const resources = {
       glassType: 'Type de Verre',
       select: 'Sélectionner...',
       delete_confirmation_product: 'Êtes-vous sûr de vouloir supprimer ce produit ?',
+      product_deleted_successfully: 'Produit supprimé avec succès',
+      delete_product_error: 'Erreur lors de la suppression du produit. Veuillez réessayer.',
       
       // Product Types
       frame: 'Monture',
@@ -331,6 +343,8 @@ const resources = {
       email: 'Email',
       address: 'Adresse',
       delete_confirmation_doctor: 'Êtes-vous sûr de vouloir supprimer ce médecin ?',
+      doctor_deleted_successfully: 'Médecin supprimé avec succès',
+      delete_doctor_error: 'Erreur lors de la suppression du médecin. Veuillez réessayer.',
       
       // Search
       search: 'Rechercher',

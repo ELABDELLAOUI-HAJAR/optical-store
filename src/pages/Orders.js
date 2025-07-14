@@ -5,9 +5,10 @@ import OrderForm from '../components/OrderForm';
 import PageTitle from '../components/PageTitle';
 import ModalTitle from '../components/ModalTitle';
 import SearchBar from '../components/SearchBar';
-import { insertOrder, fetchOrders, updateOrder } from '../supabaseClient';
+import { insertOrder, fetchOrders, updateOrder, deleteOrder } from '../supabaseClient';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 function Orders() {
   const { t } = useTranslation();
@@ -19,6 +20,8 @@ function Orders() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const rowsPerPage = 5;
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [confirmOrderId, setConfirmOrderId] = useState(null);
 
   const getOrders = useCallback(async () => {
     const ordersData = await fetchOrders();
@@ -63,13 +66,25 @@ function Orders() {
     setIsModalOpen(true);
   };
 
-  const handleDeleteOrder = async(orderId) => {
-    if (window.confirm(t('delete_confirmation_order'))) {
-      /*await deleteOrder(orderId);
-      setCurrentPage(1);
-      getOrders();*/
-      console.log('delete order', orderId);
+
+  const handleDeleteOrder = async (orderId) => {
+    setConfirmOrderId(orderId);
+    setIsConfirmModalOpen(true);
+  };
+
+  const handleConfirmDelete = async() => {
+    const { error } = await deleteOrder(confirmOrderId);
+    if (error) {
+      console.error('Error deleting order:', error);
+      alert(t('delete_order_error'));
+      return;
     }
+      
+    // Refresh the orders list
+    setCurrentPage(1);
+    getOrders();
+    alert(t('order_deleted_successfully'));
+    
   };
 
   const handleCloseModal = () => {
@@ -91,115 +106,116 @@ function Orders() {
       
       invoiceDiv.innerHTML = `
         <div class="invoice">
-          <!-- Header with logo -->
-          <div class="header">
-            <img src="${process.env.PUBLIC_URL}/invoice_header.jpg" alt="Company Logo" class="company-logo">
-          </div>
-          
-          <h3><b>Salé, le :</b> ${new Date(order.order_date).toLocaleDateString()}</h3>
-          
-          <h2 class="invoice-title"><b>Facture :</b> ${order.id}</h2>
+          <div class="content-wrapper">
+            <!-- Header with logo -->
+            <div class="header">
+              <img src="${process.env.PUBLIC_URL}/invoice_header.jpg" alt="Company Logo" class="company-logo">
+            </div>
+            
+            <h3><b>Salé, le :</b> ${new Date(order.order_date).toLocaleDateString()}</h3>
+            
+            <h2 class="invoice-title"><b>Facture :</b> ${order.id}</h2>
 
-          <p class="client-name"><b>Nom du client :</b> ${order.client.first_name.toUpperCase()} ${order.client.last_name.toUpperCase()}</p>
-          
-          <table class="prescription-table">
-            <thead>
-              <tr>
-                <th></th>
-                <th>SPH</th>
-                <th>CYL</th>
-                <th>AXE</th>
-                <th>ADD</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>OD</td>
-                <td>${order.right_sph || '0'}</td>
-                <td>${order.right_cyl || '0'}</td>
-                <td>${order.right_axis || '0'}</td>
-                <td>${order.right_add || '0'}</td>
-              </tr>
-              <tr>
-                <td>OG</td>
-                <td>${order.left_sph || '0'}</td>
-                <td>${order.left_cyl || '0'}</td>
-                <td>${order.left_axis || '0'}</td>
-                <td>${order.left_add || '0'}</td>
-              </tr>
-            </tbody>
-          </table>
-
-          <table class="vision-table">
-            <thead>
-              <tr>
-                <th colspan="3">Type de vision</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>${order.order_vision[0].nearSightedness ? '<label><input type="checkbox" checked /> Vision de près</label>' : '<label><input type="checkbox" /> Vision de près</label>'}</td>
-                <td>${order.order_vision[0].farSightedness ? '<label><input type="checkbox" checked /> Vision de loin</label>' : '<label><input type="checkbox" /> Vision de loin</label>'}</td>
-                <td>${order.order_vision[0].progressive ? '<label><input type="checkbox" checked /> Progressive</label>' : '<label><input type="checkbox" /> Progressive</label>'}</td>
-              </tr>
-            </tbody>
-          </table>
-          
-          <table class="treatments-table">
-            <thead>
-              <tr>
-                <th colspan="3">Type de traitement</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>${order.order_treatment[0].white ? '<label><input type="checkbox" checked />Blanc</label>' : '<label><input type="checkbox" />Blanc</label>'}</td>
-                <td>${order.order_treatment[0].antiBlueLight ? '<label><input type="checkbox" checked />Anti-LED</label>' : '<label><input type="checkbox" />Anti-LED</label>'}</td>
-                <td>${order.order_treatment[0].antiReflexion ? '<label><input type="checkbox" checked />Anti-Reflet</label>' : '<label><input type="checkbox" />Anti-Reflet</label>'}</td>
-              </tr>
-              <tr>
-                <td>${order.order_treatment[0].transitions ? '<label><input type="checkbox" checked />Transitions</label>' : '<label><input type="checkbox" />Transitions</label>'}</td>
-                <td>${order.order_treatment[0].uniColor ? '<label><input type="checkbox" checked />Uni-couleur</label>' : '<label><input type="checkbox" />Uni-couleur</label>'}</td>
-                <td>${order.order_treatment[0].degraded ? '<label><input type="checkbox" checked />Dégradé</label>' : '<label><input type="checkbox" />Dégradé</label>'}</td>
-              </tr>
-              <tr>
-                <td>${order.order_treatment[0].mirrored ? '<label><input type="checkbox" checked />Miroir</label>' : '<label><input type="checkbox" />Miroir</label>'}</td>
-                <td>${order.order_treatment[0].polarized ? '<label><input type="checkbox" checked />Polarisé</label>' : '<label><input type="checkbox" />Polarisé</label>'}</td>
-                <td></td>
-              </tr>
-            </tbody>
-          </table>
-          
-          <table class="items-table">
-            <thead>
-              <tr>
-                <th>Quantité</th>
-                <th>Description</th>
-                <th>Prix unitaire</th>
-                <th>Montant TTC</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${(order.order_product && order.order_product.map(product => `
+            <p class="client-name"><b>Nom du client :</b> ${order.client.first_name.toUpperCase()} ${order.client.last_name.toUpperCase()}</p>
+            
+            <table class="prescription-table">
+              <thead>
                 <tr>
-                  <td>${product.quantity}</td>
-                  <td>${product.product.name}</td>
-                  <td>${product.unit_price} ${t('currency')}</td>
-                  <td>${product.sub_total} ${t('currency')}</td>
+                  <th></th>
+                  <th>SPH</th>
+                  <th>CYL</th>
+                  <th>AXE</th>
+                  <th>ADD</th>
                 </tr>
-              `).join('')) || (
-                `<tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>OD</td>
+                  <td>${order.right_sph || '0'}</td>
+                  <td>${order.right_cyl || '0'}</td>
+                  <td>${order.right_axis || '0'}</td>
+                  <td>${order.right_add || '0'}</td>
+                </tr>
+                <tr>
+                  <td>OG</td>
+                  <td>${order.left_sph || '0'}</td>
+                  <td>${order.left_cyl || '0'}</td>
+                  <td>${order.left_axis || '0'}</td>
+                  <td>${order.left_add || '0'}</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <table class="vision-table">
+              <thead>
+                <tr>
+                  <th colspan="3">Type de vision</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>${order.order_vision[0].nearSightedness ? '<label><input type="checkbox" checked /> Vision de près</label>' : '<label><input type="checkbox" /> Vision de près</label>'}</td>
+                  <td>${order.order_vision[0].farSightedness ? '<label><input type="checkbox" checked /> Vision de loin</label>' : '<label><input type="checkbox" /> Vision de loin</label>'}</td>
+                  <td>${order.order_vision[0].progressive ? '<label><input type="checkbox" checked /> Progressive</label>' : '<label><input type="checkbox" /> Progressive</label>'}</td>
+                </tr>
+              </tbody>
+            </table>
+            
+            <table class="treatments-table">
+              <thead>
+                <tr>
+                  <th colspan="3">Type de traitement</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>${order.order_treatment[0].white ? '<label><input type="checkbox" checked />Blanc</label>' : '<label><input type="checkbox" />Blanc</label>'}</td>
+                  <td>${order.order_treatment[0].antiBlueLight ? '<label><input type="checkbox" checked />Anti-LED</label>' : '<label><input type="checkbox" />Anti-LED</label>'}</td>
+                  <td>${order.order_treatment[0].antiReflexion ? '<label><input type="checkbox" checked />Anti-Reflet</label>' : '<label><input type="checkbox" />Anti-Reflet</label>'}</td>
+                </tr>
+                <tr>
+                  <td>${order.order_treatment[0].transitions ? '<label><input type="checkbox" checked />Transitions</label>' : '<label><input type="checkbox" />Transitions</label>'}</td>
+                  <td>${order.order_treatment[0].uniColor ? '<label><input type="checkbox" checked />Uni-couleur</label>' : '<label><input type="checkbox" />Uni-couleur</label>'}</td>
+                  <td>${order.order_treatment[0].degraded ? '<label><input type="checkbox" checked />Dégradé</label>' : '<label><input type="checkbox" />Dégradé</label>'}</td>
+                </tr>
+                <tr>
+                  <td>${order.order_treatment[0].mirrored ? '<label><input type="checkbox" checked />Miroir</label>' : '<label><input type="checkbox" />Miroir</label>'}</td>
+                  <td>${order.order_treatment[0].polarized ? '<label><input type="checkbox" checked />Polarisé</label>' : '<label><input type="checkbox" />Polarisé</label>'}</td>
                   <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                </tr>`
-              )}
-            </tbody>
-          </table>
-          
-          <p class="total">Montant Total TTC : ${order.total_amount || 0} ${t('currency')}</p>
-          
+                </tr>
+              </tbody>
+            </table>
+            
+            <table class="items-table">
+              <thead>
+                <tr>
+                  <th>Quantité</th>
+                  <th>Description</th>
+                  <th>Prix unitaire</th>
+                  <th>Montant TTC</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${(order.order_product && order.order_product.map(product => `
+                  <tr>
+                    <td>${product.quantity}</td>
+                    <td>${product.product.name}</td>
+                    <td>${product.unit_price} ${t('currency')}</td>
+                    <td>${product.sub_total} ${t('currency')}</td>
+                  </tr>
+                `).join('')) || (
+                  `<tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                  </tr>`
+                )}
+              </tbody>
+            </table>
+            
+            <p class="total">Montant Total TTC : ${order.total_amount || 0} ${t('currency')}</p>
+          </div>
           <!-- Footer with contact and business info -->
           <div class="footer">
            <img src="${process.env.PUBLIC_URL}/invoice_footer.jpg" alt="Footer Image" class="footer-image">
@@ -212,10 +228,11 @@ function Orders() {
         .invoice {
           font-family: Arial, sans-serif;
           position: relative;
-          margin: 0 auto; 
           display: flex;
           flex-direction: column;
-          height: 150vh;
+          min-height: 100vh; 
+          padding-bottom: 200px; 
+          margin-left: 20px;
         }
         .header {
           text-align: center;
@@ -227,15 +244,28 @@ function Orders() {
           height: auto;
           display: block;
         }
+        .content-wrapper {
+          flex: 1;
+          margin-bottom: 20px; /* Space for the footer */
+        }
         .footer {
           position: absolute;
-          bottom: 5px;
+          bottom: 0;
+          left: 0;
+          right: 0;
           width: 100%;
+          height: 150px; 
+          z-index: 1;
         }
         .footer-image {
           width: 100%;
-          height: auto;
-          display: block;
+          height: 100%;
+          object-fit: contain; 
+        }
+        /* For PDF generation */
+        @page {
+          size: A5;
+          margin: 0;
         }
         .invoice h3{
           text-align: right;
@@ -259,7 +289,7 @@ function Orders() {
         }
         .client-name {
           font-size: 1.2em;
-          margin-bottom: 5px;
+          margin-bottom: 10px;
         }
         .invoice table, .invoice th, .invoice td {
           border: 1px solid #ddd;
@@ -273,6 +303,13 @@ function Orders() {
           text-align: right;
           font-size: 1.2em;
           margin-top: 15px;
+        }
+        .total {
+          position: relative;
+          z-index: 2;
+          background: white;
+          padding: 15px;
+          margin: 20px 0;
         }
         .vision-table th, .treatments-table th ,
         .items-table th, .prescription-table th,
@@ -309,6 +346,35 @@ function Orders() {
         .items-table td:nth-child(3),
         .items-table td:nth-child(4) {
           text-align: center;
+        }
+        .items-table {
+          page-break-inside: avoid; /* Keep table rows together */
+        }
+        .items-table tbody {
+          max-height: 400px; /* Adjust based on your needs */
+          overflow-y: auto;
+        }
+
+        /* Add this to ensure content doesn't hide behind footer */
+        @media print {
+          .invoice {
+            padding-bottom: 200px;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+          .footer {
+            position: absolute;
+            bottom: 0;
+            page-break-before: avoid;
+            page-break-after: always;
+          }
+          .content-wrapper {
+            margin-bottom: 0;
+          }
+          .items-table tbody {
+            max-height: none;
+            overflow-y: visible;
+          }
         }
 
       `;
@@ -526,6 +592,14 @@ function Orders() {
           </div>
         </div>
       )}
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={isConfirmModalOpen}
+        onClose={() => setIsConfirmModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        message={t('delete_confirmation_order')}
+        title={t('delete')}
+      />
     </>
   );
 }

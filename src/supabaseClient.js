@@ -525,4 +525,45 @@ export const updateOrder = async (orderId, orderData, orderProducts, orderTreatm
 
 };
 
+// Function to delete an order and its related data
+export const deleteOrder = async (orderId) => {
+  // First, get the order products to update stock quantities
+  const { data: orderProducts, error: fetchProductsError } = await supabase
+    .from('order_product')
+    .select('product_id, quantity, product(stock_quantity)')
+    .eq('order_id', orderId);
+
+  if (fetchProductsError) {
+    console.error('Error fetching order products for deletion:', fetchProductsError);
+    return { error: fetchProductsError };
+  }
+
+  // Start a transaction to ensure data consistency
+  const { error } = await supabase.rpc('delete_order_with_dependencies', {
+    p_order_id: orderId
+  });
+
+  if (error) {
+    console.error('Error in order deletion transaction:', error);
+    return { error };
+  }
+
+  // Restore product quantities
+  if (orderProducts && orderProducts.length > 0) {
+    for (const item of orderProducts) {
+      const newQuantity = (item.product.stock_quantity || 0) + (item.quantity || 0);
+      const { error: updateError } = await supabase
+        .from('product')
+        .update({ stock_quantity: newQuantity })
+        .eq('id', item.product_id);
+      
+      if (updateError) {
+        console.error('Error updating product quantity during order deletion:', updateError);
+      }
+    }
+  }
+
+  return { success: true };
+};
+
 export { fetchClients , fetchDoctors};

@@ -6,6 +6,8 @@ import ModalTitle from '../components/ModalTitle';
 import DoctorForm from '../components/DoctorForm';
 import SearchBar from '../components/SearchBar';
 import { saveDoctor, fetchDoctors, deleteDoctor, updateDoctor } from '../supabaseClient'; 
+import ConfirmationModal from '../components/ConfirmationModal';
+import NotificationModal from '../components/NotificationModal';
 
 function Doctors() {
   const { t } = useTranslation();
@@ -17,6 +19,11 @@ function Doctors() {
   const [allDoctors, setAllDoctors] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
   const rowsPerPage = 5;
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [confirmDoctorId, setConfirmDoctorId] = useState(null);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState('');
+  const [notificationType, setNotificationType] = useState('success');
 
   const getDoctors = useCallback(async () => {
     const doctorData = await fetchDoctors();
@@ -65,11 +72,27 @@ function Doctors() {
   };
 
   const handleDeleteDoctor = async (doctorId) => {
-    if (window.confirm(t('delete_confirmation_doctor'))) {
-      await deleteDoctor(doctorId);
-      //setDoctors(doctors.filter(doctor => doctor.id !== doctorId));
+    setConfirmDoctorId(doctorId);
+    setIsConfirmModalOpen(true);
+  };
+
+  const handleConfirmDelete = async() => {
+    try {
+      await deleteDoctor(confirmDoctorId);
+      // Refresh the doctors list
       setCurrentPage(1);
       getDoctors();
+      //alert(t('doctor_deleted_successfully'));
+      setNotificationMessage(t('doctor_deleted_successfully'));
+      setNotificationType('success');
+      setIsNotificationOpen(true);
+      setIsConfirmModalOpen(false);  // Close the modal after successful deletion
+    } catch (error) {
+      console.error('Error deleting doctor:', error);
+      //alert(t('delete_doctor_error'));
+      setNotificationMessage(t('delete_doctor_error'));
+      setNotificationType('error');
+      setIsNotificationOpen(true);
     }
   };
 
@@ -240,6 +263,21 @@ function Doctors() {
           </div>
         </div>
       )}
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={isConfirmModalOpen}
+        onClose={() => setIsConfirmModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        message={t('delete_confirmation_doctor')}
+        title={t('delete')}
+      />
+      {/* Notification Modal */}
+      <NotificationModal
+        isOpen={isNotificationOpen}
+        onClose={() => setIsNotificationOpen(false)}
+        message={notificationMessage}
+        type={notificationType}
+      />
     </div>
   );
 }

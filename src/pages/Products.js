@@ -9,6 +9,8 @@ import AddProductModal from '../components/AddProductModal';
 import PageTitle from '../components/PageTitle';
 import SearchBar from '../components/SearchBar';
 import { saveProduct, fetchProducts, deleteProduct, updateProduct } from '../supabaseClient';
+import ConfirmationModal from '../components/ConfirmationModal';
+import NotificationModal from '../components/NotificationModal';
 
 function Products() {
   const { t } = useTranslation();
@@ -20,6 +22,11 @@ function Products() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const rowsPerPage = 5;
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState('');
+  const [notificationType, setNotificationType] = useState('success');
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [confirmProductId, setConfirmProductId] = useState(null);
 
   const getProducts = useCallback(async () => {
     const productsData = await fetchProducts();
@@ -81,10 +88,27 @@ function Products() {
   };
 
   const handleDeleteProduct = async(productId) => {
-    if (window.confirm(t('delete_confirmation_product'))) {
-      await deleteProduct(productId);
-      //setCurrentPage(1);
+    setConfirmProductId(productId);
+    setIsConfirmModalOpen(true);
+  };
+
+  const handleConfirmDelete = async() => {
+    try {
+      await deleteProduct(confirmProductId);
+      // Refresh the products list
+      setCurrentPage(1);
       getProducts();
+      //alert(t('product_deleted_successfully'));
+      setNotificationMessage(t('product_deleted_successfully'));
+      setNotificationType('success');
+      setIsNotificationOpen(true);
+      setIsConfirmModalOpen(false);  // Close the modal after successful deletion
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      //alert(t('delete_product_error'));
+      setNotificationMessage(t('delete_product_error'));
+      setNotificationType('error');
+      setIsNotificationOpen(true);
     }
   };
 
@@ -217,6 +241,21 @@ function Products() {
         open={isAddModalOpen}
         onSubmit={handleSubmitProduct}
         initialData={editingProduct}
+      />
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={isConfirmModalOpen}
+        onClose={() => setIsConfirmModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        message={t('delete_confirmation_product')}
+        title={t('delete')}
+      />
+      {/* Notification Modal */}
+      <NotificationModal
+        isOpen={isNotificationOpen}
+        onClose={() => setIsNotificationOpen(false)}
+        message={notificationMessage}
+        type={notificationType}
       />
     </div>
   );
